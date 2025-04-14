@@ -1,4 +1,4 @@
 fn main() {
     let x = 5;
-    println!("Hello,rld!");
+    println!("Hello,rld! {}", 5);
 }
