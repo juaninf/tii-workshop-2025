@@ -1,5 +1,4 @@
 fn main() {
-    let x = 5u64;
-    let _ = x as u64;
-    println!("Hello, world!");
+    let x = 5;
+    println!("Hello,rld! {}", x);
 }
