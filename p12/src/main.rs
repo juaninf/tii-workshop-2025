@@ -1,4 +1,4 @@
 fn main() {
-    let x = 5u64;
+    let x = 5;
     println!("Hello,rld!");
 }
