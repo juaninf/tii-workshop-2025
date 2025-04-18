@@ -1,3 +1,18 @@
+use std::f32::consts::E;
+
+struct User {
+    id: u32,
+    name: String,
+    credit_line: u64,
+    balance: i64,
+}
+
+struct Bank {
+    users: Vec<User>,
+    credit_interest: u64,
+    debit_interest: u64,
+}
+
 trait BankAccount {
     fn deposit(&mut self, amount: u64);
     fn withdraw(&mut self, amount: u64) -> Result<(), String>;
@@ -58,20 +73,59 @@ impl BankOperations for Bank {
 }
 
 impl Bank {
+    fn merge_bank(mut self, other_bank: &mut Bank) {
+        for user_from in self.users.into_iter() {
+            let other_bank_user = other_bank.find_user_by_name(&user_from.name);
+            if other_bank_user.is_some() {
+                let other_bank_user = other_bank_user.unwrap();
+                other_bank_user.balance += user_from.balance;
+            } else {
+                other_bank.users.push(user_from);
+            }
+        }
+    }
+
+    fn accrue_interest(&mut self) {
+        for user in &mut self.users.iter_mut() {
+            if user.balance > 0 {
+                user.balance += user.balance * self.credit_interest as i64 / 100;
+            } else if user.balance < 0 {
+                user.balance += user.balance * self.debit_interest as i64 / 100;
+            }
+        }
+    }
+
     fn find_user_by_name(&mut self, name: &str) -> Option<&mut User> {
         self.users.iter_mut().find(|user| user.name == name)
     }
 
-    fn find_two_users_by_name(&mut self, name1: &str, name2: &str) -> Option<&mut User> {
-        let Some(x) = self
-            .users
-            .iter_mut()
-            .find(|user| user.name == name1 || user.name == name2)
-        else {
-            return None;
-        };
-        println!("{}", x.id);
-        Some(x)
+    fn find_two_users_by_name(
+        &mut self,
+        name1: String,
+        name2: String,
+    ) -> Option<(&mut User, &mut User)> {
+        let mid = self.users.len() / 2;
+        let (first_part, second_part) = self.users.split_at_mut(mid);
+
+        let mut user1: Option<&mut User> = None;
+
+        for user in first_part.iter_mut() {
+            if user.name == name1 {
+                user1 = Some(user);
+                break;
+            }
+        }
+
+        let mut user2: Option<&mut User> = None;
+
+        for user in second_part.iter_mut() {
+            if user.name == name2 {
+                user2 = Some(user);
+                break;
+            }
+        }
+
+        Some((user1.unwrap(), user2.unwrap()))
     }
 
     fn add_user(&mut self, user: User) {
@@ -102,42 +156,23 @@ impl Bank {
 
     fn transfer(
         &mut self,
-        from_user_str: &mut String,
-        to_user_str: &mut String,
+        from_user_str: String,
+        to_user_str: String,
         amount: u64,
     ) -> Result<(), String> {
-        let Some(from_user) = self.find_two_users_by_name(from_user_str, to_user_str) else {
+        let Some((from_user, to_user)) = self.find_two_users_by_name(from_user_str, to_user_str)
+        else {
             return Err(String::from("User not found"));
         };
-        //let Some(from_user) = self.find_user_by_name(from_user_str) else {
-        //    return Err(String::from("User not found"));
-        //};
-        //
-        //let Some(to_user) = self.find_user_by_name(to_user_str) else {
-        //    return Err(String::from("User not found"));
-        //};
-        //
-        //if from_user.credit_line < amount {
-        //    return Err("Insufficient credit line".to_string());
-        //}
-        //
-        //from_user.withdraw(amount)?;
-        //to_user.deposit(amount);
+
+        if (from_user.credit_line as i64) + from_user.balance < amount as i64 {
+            return Err("Insufficient credit line".to_string());
+        }
+
+        from_user.withdraw(amount)?;
+        to_user.deposit(amount);
         Ok(())
     }
-}
-
-struct User {
-    id: u32,
-    name: String,
-    credit_line: u64,
-    balance: i64,
-}
-
-struct Bank {
-    users: Vec<User>,
-    credit_interest: u64,
-    debit_interest: u64,
 }
 
 #[cfg(test)]
