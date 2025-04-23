@@ -1,0 +1,16 @@
+[package]
+name = "symmetric_cipher_operators"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib"]
+
+
+[dependencies]
+pyo3 = { version = "0.21", features = ["extension-module"] }
+bitvec = "1.0"
+ndarray = "0.15"
+numpy = "0.21"  # Needed for Array2 bindings in Python
+
+

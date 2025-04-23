@@ -113,5 +113,47 @@ pub fn write_song() -> Vec<String> {
     song_vec
 }
 
+pub fn song_to_string(mut iteration: impl Iterator<Item = String>) -> String {
+    let mut song = String::new();
+    for line in iteration {
+        println!("{line}");
+        song.push_str(&line);
+    }
+    song
+}
+
+pub fn song_to_file(mut iteration: impl Iterator<Item = String>, path: String) {
+    use std::fs::File;
+    use std::io::Error;
+    use std::io::Write;
+    use std::path::Path;
+
+    let path = Path::new(&path);
+    let mut file = match File::create(&path) {
+        Err(why) => panic!("couldn't create {}: {}", path.display(), why),
+        Ok(file) => file,
+    };
+
+    for line in iteration {
+        println!("{line}");
+        if let Err(why) = file.write(line.as_bytes()) {
+            panic!("couldn't write to {}: {}", path.display(), why);
+        }
+    }
+}
+
+pub fn song_to_tcp(mut iteration: impl Iterator<Item = String>, path: String) {
+    use std::io::Write;
+    use std::net::TcpStream;
+
+    let mut stream = TcpStream::connect(path).expect("Could not connect to server");
+    for line in iteration {
+        println!("{line}");
+        stream
+            .write(line.as_bytes())
+            .expect("Failed to write to stream");
+    }
+}
+
 #[cfg(test)]
 mod song_tests;

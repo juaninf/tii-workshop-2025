@@ -43,3 +43,29 @@ fn test_duplicate_iterator() {
         print!("{line}");
     }
 }
+
+#[test]
+fn test_song_to_string() {
+    let v = vec!["2".to_string(), "3".to_string(), "4".to_string()];
+    let mut song_iter = v.into_iter();
+    let concatenated_string = song_to_string(song_iter);
+    assert_eq!(concatenated_string, "234");
+}
+
+#[test]
+fn test_song_to_file() {
+    let file_path = "test_song.txt".to_string();
+    let v = vec!["2".to_string(), "3".to_string(), "4".to_string()];
+    let mut song_iter = v.into_iter();
+    song_to_file(song_iter, file_path);
+    let file_content = std::fs::read_to_string("test_song.txt").unwrap();
+    assert_eq!(file_content, "234");
+}
+
+#[test]
+fn test_song_to_tcp() {
+    let v = vec!["2".to_string(), "3".to_string(), "4".to_string()];
+    let mut song_iter = v.into_iter();
+    song_to_tcp(song_iter, "127.0.0.1:1234".to_string());
+    //assert_eq!(tcp, "234");
+}
